@@ -1,6 +1,8 @@
 defmodule Gittp.Git do
     use GenServer
     require Logger
+    @interval 120 * 1000
+
     # client functions
 
     def start_link({:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}) do
@@ -22,7 +24,7 @@ defmodule Gittp.Git do
                     repo = Git.new local_repo_path
                     Git.remote repo, ["add", "upstream", remote_repo_url]
                     Git.pull repo, ~w(--rebase upstream master)
-                    Logger.info "pulled latest changes from " <> local_repo_path            
+                    Logger.info "pulled latest changes from upstream" 
                     repo
                 else
                     {:ok, repo} = Git.clone [remote_repo_url, local_repo_path]
@@ -30,22 +32,31 @@ defmodule Gittp.Git do
                     Logger.info "cloned " <> remote_repo_url     
                     repo
                 end    
-        
-        {:ok, {repo}}
+
+        Process.send_after(self(), :pull, @interval) 
+        {:ok, repo}
     end
 
-    def handle_call({:read, path}, _from, {repo}) do        
+    def handle_call({:read, path}, _from, repo) do        
         case Gittp.Repo.content(repo, path) do
-            {:ok, content} -> {:reply, %{"content" => content, "checksum" => Gittp.Utils.hash_string(content), "path" => path}, {repo}}
-            {:error, message} -> {:reply, message, {repo}}    
+            {:ok, content} -> {:reply, %{"content" => content, "checksum" => Gittp.Utils.hash_string(content), "path" => path}, repo}
+            {:error, message} -> {:reply, message, repo}    
         end 
     end
 
-    def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, {repo}) do     
+    def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
         case checksum_valid?(checksum, repo, file_path) do
-            false -> {:reply, {:error, :checksum_mismatch}, {repo}}            
+            false -> {:reply, {:error, :checksum_mismatch}, repo}            
             _ -> Gittp.Repo.write(repo, file_path, content, commit_message)
         end
+    end
+    
+    def handle_info(:pull, repo) do
+        Git.pull repo
+        Logger.info "pulled latest changes from upstream"
+
+        Process.send_after(self(), :pull, @interval) 
+        {:noreply, repo}
     end
 
     defp checksum_valid?(checksum, repo, file_path) do

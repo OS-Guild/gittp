@@ -15,18 +15,18 @@ defmodule Gittp.Repo do
                     case Git.pull repo do
                         {:ok, _} -> 
                             case Git.push repo do 
-                                {:ok, message} -> {:reply, message, {repo}}
+                                {:ok, message} -> {:reply, message, repo}
                                 {:error, message} -> 
                                     Git.reset repo, ~w(--hard HEAD~1)
-                                    {:reply, {:error, message}, {repo}}
+                                    {:reply, {:error, message}, repo}
                             end
 
                         {:error, message} -> 
                             Git.reset repo, ~w(--hard HEAD~1)
-                            {:reply, message, {repo}}
+                            {:reply, message, repo}
 
                     end
-                error -> {:reply, error, {repo}}    
+                error -> {:reply, error, repo}    
             end 
     end
 end
