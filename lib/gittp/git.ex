@@ -1,12 +1,9 @@
 defmodule Gittp.Git do
     use GenServer
-    import Git
-
-
     # client functions
 
     def start_link({:repo_base_path, repo_base_path}) do
-        GenServer.start_link(__MODULE__, repo_url: repo_url, name: :git)
+        GenServer.start_link(__MODULE__, {:repo_base_path, repo_base_path}, name: :git)
     end
 
     def content(pid, path) do
