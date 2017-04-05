@@ -9,6 +9,7 @@ defmodule Gittp.Router do
     pipe_through :api # Use the default browser stack
 
     get "/content/:path", ContentController, :read
+    post "/content/:path", ContentController, :write
   end
 
   # Other scopes may use custom stacks.

@@ -11,6 +11,10 @@ defmodule Gittp.Git do
         GenServer.call(pid, {:read, path})
     end
 
+    def write(pid, path: path, content: content) do
+        GenServer.call(pid, {:write, path, content})
+    end
+
     # server functions
 
     def init(:ok) do
@@ -24,4 +28,10 @@ defmodule Gittp.Git do
         end 
     end
 
+    def handle_call({:write, path, content}, _from, _) do
+        case File.write path, content do
+            :ok -> {:reply, :ok, []}
+            error -> {:reply, error, []}    
+        end 
+    end
 end
