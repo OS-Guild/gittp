@@ -1,5 +1,8 @@
 defmodule Gittp.Git do
     use GenServer
+    @repo_base_path "/Users/guy/guy-personal/dev/repo-example/"
+    import Git
+
 
     # client functions
 
@@ -12,7 +15,7 @@ defmodule Gittp.Git do
     end
 
     def write(pid, path: path, content: content) do
-        GenServer.call(pid, {:write, path, content})
+        GenServer.call(pid, {:write, [file_path: path, content: content]})
     end
 
     # server functions
@@ -22,15 +25,21 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:read, path}, _from, _) do
-        case File.read path do
+        case File.read @repo_base_path <> path do
             {:ok, content} -> {:reply, content, []}
             {:error, message} -> {:reply, message, []}    
         end 
     end
 
-    def handle_call({:write, path, content}, _from, _) do
-        case File.write path, content do
-            :ok -> {:reply, :ok, []}
+    def handle_call({:write, [file_path: file_path, content: content]}, _from, _) do        
+        case File.write @repo_base_path <> file_path, content do
+            :ok -> 
+                #repo = Git.new "/Users/guy/guy-personal/dev/repo-example"
+                repo = Git.new @repo_base_path                
+                Git.add repo, "."
+                Git.commit repo, ["-m", "my message"]
+                {:reply, :ok, []}
+
             error -> {:reply, error, []}    
         end 
     end
