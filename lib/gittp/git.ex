@@ -42,25 +42,37 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, {repo}) do     
-        case File.write repo.path <> "/" <> file_path, content do
-            :ok -> 
-                Git.add repo, "."
-                Git.commit repo, ["-m", commit_message]
-                case Git.pull repo do
-                    {:ok, _} -> 
-                        case Git.push repo do 
-                            {:ok, message} -> {:reply, message, {repo}}
-                            {:error, message} -> 
-                                Git.reset repo, ~w(--hard HEAD~1)
-                                {:reply, {:error, message}, {repo}}
-                        end
+        if !checksum_valid?(full_file_path(repo.path, file_path), checksum) do
+            {:reply, {:error, :checksum_mismatch}, {repo}}
+        else        
+            case File.write repo.path <> "/" <> file_path, content do
+                :ok -> 
+                    Git.add repo, "."
+                    Git.commit repo, ["-m", commit_message]
+                    case Git.pull repo do
+                        {:ok, _} -> 
+                            case Git.push repo do 
+                                {:ok, message} -> {:reply, message, {repo}}
+                                {:error, message} -> 
+                                    Git.reset repo, ~w(--hard HEAD~1)
+                                    {:reply, {:error, message}, {repo}}
+                            end
 
-                    {:error, message} -> 
-                        Git.reset repo, ~w(--hard HEAD~1)
-                        {:reply, message, {repo}}
+                        {:error, message} -> 
+                            Git.reset repo, ~w(--hard HEAD~1)
+                            {:reply, message, {repo}}
 
-                end
-            error -> {:reply, error, {repo}}    
-        end 
+                    end
+                error -> {:reply, error, {repo}}    
+            end 
+        end
+    end
+
+    defp full_file_path(repo_path, relative_file_path) do
+        repo_path <> "/" <> relative_file_path
+    end
+
+    defp checksum_valid?(checksum, file_path) do
+        File.exists?(file_path) and Gittp.Utils.hash_file(file_path) != checksum
     end    
 end
