@@ -1,13 +1,12 @@
 defmodule Gittp.Git do
     use GenServer
-    @repo_base_path "/Users/guy/guy-personal/dev/repo-example/"
     import Git
 
 
     # client functions
 
-    def start_link do
-        GenServer.start_link(__MODULE__, :ok, name: :git)
+    def start_link({:repo_base_path, repo_base_path}) do
+        GenServer.start_link(__MODULE__, repo_url: repo_url, name: :git)
     end
 
     def content(pid, path) do
@@ -20,22 +19,21 @@ defmodule Gittp.Git do
 
     # server functions
 
-    def init(:ok) do
-        {:ok, []}
+    def init({:repo_base_path, repo_base_path}) do
+        {:ok, {:repo_base_path, repo_base_path}}
     end
 
-    def handle_call({:read, path}, _from, _) do
-        case File.read @repo_base_path <> path do
+    def handle_call({:read, path}, _from, {:repo_base_path, repo_base_path}) do
+        case File.read repo_base_path <> path do
             {:ok, content} -> {:reply, content, []}
             {:error, message} -> {:reply, message, []}    
         end 
     end
 
-    def handle_call({:write, [file_path: file_path, content: content]}, _from, _) do        
-        case File.write @repo_base_path <> file_path, content do
+    def handle_call({:write, [file_path: file_path, content: content]}, _from, {:repo_base_path, repo_base_path}) do        
+        case File.write repo_base_path <> file_path, content do
             :ok -> 
-                #repo = Git.new "/Users/guy/guy-personal/dev/repo-example"
-                repo = Git.new @repo_base_path                
+                repo = Git.new repo_base_path                
                 Git.add repo, "."
                 Git.commit repo, ["-m", "my message"]
                 {:reply, :ok, []}
