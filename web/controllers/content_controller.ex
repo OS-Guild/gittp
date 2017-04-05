@@ -5,7 +5,7 @@ defmodule Gittp.ContentController do
     json conn, Gittp.Git.content(:git, path)
   end
 
-  def write(conn, %{"path" => path, "content" => content}) do
-    text conn, inspect Gittp.Git.write(:git, path: path, content: content)      
+  def write(conn, %{"path" => _, "content" => _, "checksum" => _} = params) do
+    text conn, inspect Gittp.Git.write(:git, params)      
   end
 end
