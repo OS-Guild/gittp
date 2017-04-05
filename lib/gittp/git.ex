@@ -18,16 +18,19 @@ defmodule Gittp.Git do
     # server functions
 
     def init([{:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}]) do
-        if File.exists?(local_repo_path) do
-            repo = Git.new local_repo_path
-            Git.remote repo, ["add", "upstream", remote_repo_url]
-            Git.pull repo, ~w(--rebase upstream master)
-            Logger.info "pulled latest changes from " <> local_repo_path            
-        else
-            {:ok, repo} = Git.clone remote_repo_url
-            Git.remote repo, ["add", "upstream", remote_repo_url]    
-            Logger.info "cloned " <> remote_repo_url     
-        end    
+        repo = if File.exists?(local_repo_path) do
+                    repo = Git.new local_repo_path
+                    Git.remote repo, ["add", "upstream", remote_repo_url]
+                    Git.pull repo, ~w(--rebase upstream master)
+                    Logger.info "pulled latest changes from " <> local_repo_path            
+                    repo
+                else
+                    {:ok, repo} = Git.clone [remote_repo_url, local_repo_path]
+                    Git.remote repo, ["add", "upstream", remote_repo_url]    
+                    Logger.info "cloned " <> remote_repo_url     
+                    repo
+                end    
+        
         {:ok, {repo}}
     end
 
