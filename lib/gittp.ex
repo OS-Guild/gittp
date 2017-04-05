@@ -11,7 +11,8 @@ defmodule Gittp do
       # Start the endpoint when the application starts
       supervisor(Gittp.Endpoint, []),
       # Start your own worker by calling: Gittp.Worker.start_link(arg1, arg2, arg3)
-      worker(Gittp.Git, [repo_base_path: Application.get_env(:gittp, :repo_base_path)])
+      
+      worker(Gittp.Git, [repo_base_path: Application.get_env(:gittp, Gittp.Endpoint)[:repo_base_path]])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

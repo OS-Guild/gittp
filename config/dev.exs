@@ -22,9 +22,9 @@ config :gittp, Gittp.Endpoint,
       ~r{priv/gettext/.*(po)$},
       ~r{web/views/.*(ex)$},
       ~r{web/templates/.*(eex)$}
-    ],
-   repo_base_path: "/Users/guy/guy-personal/dev/repo-example"
-  ]
+    ],   
+  ],
+  repo_base_path: "/Users/guy/guy-personal/dev/repo-example"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
