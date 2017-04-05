@@ -37,7 +37,7 @@ defmodule Gittp.Git do
     def handle_call({:read, path}, _from, {repo}) do        
         Logger.info repo.path <> "/" <> path
         case File.read repo.path <> "/" <> path do
-            {:ok, content} -> {:reply, content, {repo}}
+            {:ok, content} -> {:reply, %{"content" => content, "checksum" => Gittp.Utils.hash_string(content), "path" => path}, {repo}}
             {:error, message} -> {:reply, message, {repo}}    
         end 
     end
