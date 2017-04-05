@@ -11,7 +11,7 @@ defmodule Gittp.Git do
         GenServer.call(pid, {:read, path})
     end
 
-    def write(pid, body = %{"content" => content, "checksum" => checksum, "path" => path}) do
+    def write(pid, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
         GenServer.call(pid, {:write, body})
     end
 
@@ -41,11 +41,11 @@ defmodule Gittp.Git do
         end 
     end
 
-    def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path}}, _from, {repo}) do     
+    def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, {repo}) do     
         case File.write repo.path <> "/" <> file_path, content do
             :ok -> 
                 Git.add repo, "."
-                Git.commit repo, ["-m", "my message"]
+                Git.commit repo, ["-m", commit_message]
                 case Git.pull repo do
                     {:ok, _} -> 
                         case Git.push repo do 
