@@ -30,8 +30,8 @@ defmodule Gittp.Git do
     def handle_call({:read, path}, _from, {repo}) do        
         Logger.info repo.path <> "/" <> path
         case File.read repo.path <> "/" <> path do
-            {:ok, content} -> {:reply, content, []}
-            {:error, message} -> {:reply, message, []}    
+            {:ok, content} -> {:reply, content, {repo}}
+            {:error, message} -> {:reply, message, {repo}}    
         end 
     end
 
@@ -43,9 +43,9 @@ defmodule Gittp.Git do
             :ok -> 
                 Git.add repo, "."
                 Git.commit repo, ["-m", "my message"]
-                {:reply, :ok, []}
+                {:reply, :ok, {repo}}
 
-            error -> {:reply, error, []}    
+            error -> {:reply, error, {repo}}    
         end 
     end
 end
