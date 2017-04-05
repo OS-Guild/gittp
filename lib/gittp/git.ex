@@ -3,8 +3,8 @@ defmodule Gittp.Git do
     require Logger
     # client functions
 
-    def start_link({:repo_base_path, repo_base_path}) do
-        GenServer.start_link(__MODULE__, {:repo_base_path, repo_base_path}, name: :git)
+    def start_link({:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}) do
+        GenServer.start_link(__MODULE__, [{:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}], name: :git)
     end
 
     def content(pid, path) do
@@ -17,21 +17,30 @@ defmodule Gittp.Git do
 
     # server functions
 
-    def init({:repo_base_path, repo_base_path}) do
-        {:ok, {:repo_base_path, repo_base_path}}
+    def init([{:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}]) do
+        if File.exists?(local_repo_path) do
+            Logger.info "deleted local git repository from " <> local_repo_path
+            File.rm_rf(local_repo_path)
+        end
+        {:ok, repo} = Git.clone remote_repo_url
+        Logger.info "cloned " <> remote_repo_url     
+        {:ok, {repo}}
     end
 
-    def handle_call({:read, path}, _from, {:repo_base_path, repo_base_path}) do
-        case File.read repo_base_path <> path do
+    def handle_call({:read, path}, _from, {repo}) do        
+        Logger.info repo.path <> "/" <> path
+        case File.read repo.path <> "/" <> path do
             {:ok, content} -> {:reply, content, []}
             {:error, message} -> {:reply, message, []}    
         end 
     end
 
-    def handle_call({:write, [file_path: file_path, content: content]}, _from, {:repo_base_path, repo_base_path}) do        
-        case File.write repo_base_path <> file_path, content do
+    def handle_call({:write, [file_path: file_path, content: content]}, _from, {repo}) do     
+        Logger.info "Writing"
+        Logger.info repo.path <> "/" <> file_path
+        
+        case File.write repo.path <> "/" <> file_path, content do
             :ok -> 
-                repo = Git.new repo_base_path                
                 Git.add repo, "."
                 Git.commit repo, ["-m", "my message"]
                 {:reply, :ok, []}
