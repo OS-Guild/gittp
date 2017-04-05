@@ -50,6 +50,8 @@ defmodule Gittp.Git do
             :ok -> 
                 Git.add repo, "."
                 Git.commit repo, ["-m", "my message"]
+                Logger.info inspect Git.pull repo # what will it return in case of conflict?
+                Logger.info inspect Git.push repo
                 {:reply, :ok, {repo}}
 
             error -> {:reply, error, {repo}}    
