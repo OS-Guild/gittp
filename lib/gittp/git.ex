@@ -35,7 +35,6 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:read, path}, _from, {repo}) do        
-        Logger.info repo.path <> "/" <> path
         case File.read repo.path <> "/" <> path do
             {:ok, content} -> {:reply, %{"content" => content, "checksum" => Gittp.Utils.hash_string(content), "path" => path}, {repo}}
             {:error, message} -> {:reply, message, {repo}}    
@@ -43,17 +42,24 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:write, [file_path: file_path, content: content]}, _from, {repo}) do     
-        Logger.info "Writing"
-        Logger.info repo.path <> "/" <> file_path
-        
         case File.write repo.path <> "/" <> file_path, content do
             :ok -> 
                 Git.add repo, "."
                 Git.commit repo, ["-m", "my message"]
-                Logger.info inspect Git.pull repo # what will it return in case of conflict?
-                Logger.info inspect Git.push repo
-                {:reply, :ok, {repo}}
+                case Git.pull repo do
+                    :ok -> 
+                        case Git.push repo do 
+                            :ok -> {:reply, :ok, {repo}}
+                            {:error, reason} -> 
+                                Git.reset repo, ~w(--hard HEAD~1)
+                                {:reply, {:error, reason}, {repo}}                                
+                        end
 
+                    {:error, reason} -> 
+                        Git.reset repo, ~w(--hard HEAD~1)
+                        {:reply, reason, {repo}}
+                        
+                end
             error -> {:reply, error, {repo}}    
         end 
     end
