@@ -49,18 +49,18 @@ defmodule Gittp.Git do
                 case Git.pull repo do
                     {:ok, _} -> 
                         case Git.push repo do 
-                            {:ok, _} -> {:reply, :ok, {repo}}
-                            {:error, reason} -> 
+                            {:ok, message} -> {:reply, message, {repo}}
+                            {:error, message} -> 
                                 Git.reset repo, ~w(--hard HEAD~1)
-                                {:reply, {:error, reason}, {repo}}
+                                {:reply, {:error, message}, {repo}}
                         end
 
-                    {:error, reason} -> 
+                    {:error, message} -> 
                         Git.reset repo, ~w(--hard HEAD~1)
-                        {:reply, reason, {repo}}
+                        {:reply, message, {repo}}
 
                 end
             error -> {:reply, error, {repo}}    
         end 
-    end
+    end    
 end
