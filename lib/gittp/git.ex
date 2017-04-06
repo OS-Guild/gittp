@@ -9,12 +9,12 @@ defmodule Gittp.Git do
         GenServer.start_link(__MODULE__, [{:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}], name: :git)
     end
 
-    def content(pid, path) do
-        GenServer.call(pid, {:read, path})
+    def content(server, path) do
+        GenServer.call(server, {:read, path})
     end
 
-    def write(pid, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
-        GenServer.call(pid, {:write, body})
+    def write(server, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
+        GenServer.call(server, {:write, body})
     end
 
     # server functions
