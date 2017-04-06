@@ -2,11 +2,36 @@ defmodule Gittp.Repo do
     require Logger
 
     def full_path(repo, file_path) do
-        Path.join [repo.path, file_path]
+        [repo.path, file_path]
+        |> Path.join
+        |> Path.expand
     end
 
     def content(repo, file_path) do
-        File.read full_path(repo, file_path)
+        path = full_path(repo, file_path)
+        case File.dir? path do
+            false -> file_content path
+                _ -> dir_content path
+        end
+    end
+
+    defp dir_content(path) do
+        case File.ls path do
+            {:ok, content} -> {:ok, %{"content" => content, 
+                                       "path" => path, 
+                                       "isDirectory" => true}}
+            error -> error
+        end
+    end
+
+    defp file_content(path) do
+        case File.read path do
+            {:ok, content} -> {:ok, %{"content" => content, 
+                                      "checksum" => Gittp.Utils.hash_string(content), 
+                                      "path" => path, 
+                                      "isDirectory" => false}}
+            error -> error
+        end
     end
 
     def write(repo, file_path, content, commit_message) do

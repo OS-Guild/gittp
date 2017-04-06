@@ -30,10 +30,7 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:read, path}, _from, repo) do        
-        case Gittp.Repo.content(repo, path) do
-            {:ok, content} -> {:reply, %{"content" => content, "checksum" => Gittp.Utils.hash_string(content), "path" => path}, repo}
-            {:error, message} -> {:reply, message, repo}    
-        end 
+        {:reply, Gittp.Repo.content(repo, path), repo}
     end
 
     def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
