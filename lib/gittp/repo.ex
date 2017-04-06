@@ -1,4 +1,6 @@
 defmodule Gittp.Repo do
+    require Logger
+
     def full_path(repo, file_path) do
         Path.join [repo.path, file_path]
     end
@@ -27,6 +29,20 @@ defmodule Gittp.Repo do
 
                     end
                 error -> {:reply, error, repo}    
-            end 
+        end 
+    end
+
+    def from_local(local_repo_path) do
+        repo = Git.new local_repo_path
+        Git.pull repo, ~w(--rebase upstream master)
+        Logger.info "pulled latest changes from upstream" 
+        repo
+    end
+
+    def clone(remote_repo_url, local_repo_path) do
+        {:ok, repo} = Git.clone [remote_repo_url, local_repo_path]
+        Git.remote repo, ["add", "upstream", remote_repo_url]    
+        Logger.info "cloned " <> remote_repo_url
+        repo
     end
 end
