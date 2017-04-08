@@ -36,7 +36,7 @@ defmodule Gittp.Git do
     def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
         case checksum_valid?(checksum, repo, file_path) do
             false -> {:reply, {:error, :checksum_mismatch}, repo}            
-            _ -> Gittp.Repo.write(repo, file_path, content, commit_message)
+            _ -> Gittp.Repo.write(repo, file_path, content, commit_message, checksum)
         end
     end
     
