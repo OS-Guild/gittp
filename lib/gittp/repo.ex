@@ -30,7 +30,7 @@ defmodule Gittp.Repo do
     end
 
     def write(repo, file_path, content, commit_message, checksum) do
-        case checksum_valid?(checksum, repo, file_path) do
+        case checksum_valid?(repo, checksum, file_path) do
             false -> {:error, :checksum_mismatch}
             true -> write_and_push(repo, file_path, content, commit_message)   
         end

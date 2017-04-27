@@ -14,7 +14,7 @@ defmodule Gittp.Git do
     end
 
     def write(server, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
-        GenServer.call(server, {:write, body})
+        GenServer.call(server, {:write, body}, 20000)
     end
 
     # server functions
@@ -34,10 +34,7 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
-        case checksum_valid?(checksum, repo, file_path) do
-            false -> {:reply, {:error, :checksum_mismatch}, repo}            
-            _ -> Gittp.Repo.write(repo, file_path, content, commit_message, checksum)
-        end
+            {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
     end
     
     def handle_info(:pull, repo) do
