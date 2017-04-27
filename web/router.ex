@@ -10,6 +10,7 @@ defmodule Gittp.Router do
 
     get "/content/:path", ContentController, :read
     post "/content/:path", ContentController, :write
+    put "/content/:path", ContentController, :create
   end
 
   # Other scopes may use custom stacks.

@@ -35,6 +35,14 @@ defmodule Gittp.Repo do
         end
     end
 
+    def create(repo, path, content, commit_message) do
+        absolute_path = full_path(repo, path)
+        {:ok, file} = File.open absolute_path, [:write]
+        IO.write file, content
+        File.close file
+        commit_and_push(repo, commit_message)
+    end
+
     defp dir_content(repo, path) do
         absolute_path = full_path(repo, path)        
         case File.ls absolute_path do

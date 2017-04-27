@@ -16,6 +16,10 @@ defmodule Gittp.Git do
     def write(server, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
         GenServer.call(server, {:write, body}, 20000)
     end
+    
+    def create(server, body = %{"content" => content, "path" => path, "commit_message" => commit_message}) do
+        GenServer.call(server, {:create, body}, 20000)
+    end
 
     # server functions
 
@@ -34,8 +38,12 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
-            {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
+        {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
     end
+
+    def handle_call({:create, %{"content" => content, "path" => path, "commit_message" => commit_message}}, _from, repo) do
+        {:reply, Gittp.Repo.create(repo, path, content, commit_message), repo}
+    end 
     
     def handle_info(:pull, repo) do
         Git.pull repo
