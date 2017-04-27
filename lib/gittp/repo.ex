@@ -7,11 +7,10 @@ defmodule Gittp.Repo do
         |> Path.expand
     end
 
-    def content(repo, file_path) do
-        path = full_path(repo, file_path)
+    def content(repo, path) do
         case File.dir? path do
-            false -> file_content path
-                _ -> dir_content path
+            false -> file_content repo, path
+                _ -> dir_content repo, path
         end
     end
 
@@ -36,8 +35,9 @@ defmodule Gittp.Repo do
         end
     end
 
-    defp dir_content(path) do
-        case File.ls path do
+    defp dir_content(repo, path) do
+        absolute_path = full_path(repo, path)        
+        case File.ls absolute_path do
             {:ok, content} -> {:ok, %{"content" => content, 
                                        "path" => path, 
                                        "isDirectory" => true}}
@@ -45,8 +45,9 @@ defmodule Gittp.Repo do
         end
     end
 
-    defp file_content(path) do
-        case File.read path do
+    defp file_content(repo, path) do
+        absolute_path = full_path(repo, path)                
+        case File.read absolute_path do
             {:ok, content} -> {:ok, %{"content" => content, 
                                       "checksum" => Gittp.Utils.hash_string(content), 
                                       "path" => path, 
