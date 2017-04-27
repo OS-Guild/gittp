@@ -10,10 +10,6 @@ defmodule Gittp.Git do
         GenServer.start_link(__MODULE__, [{:local_repo_path, local_repo_path}, {:remote_repo_url, remote_repo_url}], name: :git)
     end
 
-    def content(server, path) do
-        GenServer.call(server, {:read, path})
-    end
-
     def write(server, body = %Gittp.Commit{content: content, checksum: checksum, path: path, commit_message: commit_message}) do
         GenServer.call(server, {:write, body}, 20000)
     end
@@ -34,20 +30,9 @@ defmodule Gittp.Git do
         {:ok, repo}
     end
 
-    def handle_call({:read, path}, _from, repo) do        
-        {:reply, Gittp.Repo.content(repo, path), repo}
-    end
-
     def handle_call({:write, commit = %Gittp.Commit{}}, _from, repo) do    
         {:reply, Gittp.Repo.write(repo, commit), repo}
     end
-
-    # def handle_call({:write, %{"content" => content, 
-    #                            "checksum" => checksum, 
-    #                            "path" => file_path, 
-    #                            "commit_message" => commit_message} = params }, _from, repo) do     
-    #     {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
-    # end
 
     def handle_call({:create, %{"content" => content, "path" => path, "commit_message" => commit_message}}, _from, repo) do
         {:reply, Gittp.Repo.create(repo, path, content, commit_message), repo}

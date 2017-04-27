@@ -1,8 +1,11 @@
 defmodule Gittp.ContentController do
   use Gittp.Web, :controller
+  require Logger
 
   def read(conn, %{"path" => path}) do
-    {_, content} = Gittp.Git.content(:git, path)
+    repo_path = Application.get_env(:gittp, Gittp.Endpoint)[:local_repo_path]
+    repo = Git.new repo_path
+    {_, content} = Gittp.Repo.content(repo, path)
     json conn, content
   end
 
