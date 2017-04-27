@@ -1,6 +1,7 @@
 defmodule Gittp.Git do
     use GenServer
     require Logger
+    import Gittp.Commit
     @interval 120 * 1000
 
     # client functions
@@ -13,7 +14,7 @@ defmodule Gittp.Git do
         GenServer.call(server, {:read, path})
     end
 
-    def write(server, body = %{"content" => content, "checksum" => checksum, "path" => path, "commit_message" => commit_message}) do
+    def write(server, body = %Gittp.Commit{content: content, checksum: checksum, path: path, commit_message: commit_message}) do
         GenServer.call(server, {:write, body}, 20000)
     end
     
@@ -37,9 +38,16 @@ defmodule Gittp.Git do
         {:reply, Gittp.Repo.content(repo, path), repo}
     end
 
-    def handle_call({:write, %{"content" => content, "checksum" => checksum, "path" => file_path, "commit_message" => commit_message}}, _from, repo) do     
-        {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
+    def handle_call({:write, commit = %Gittp.Commit{}}, _from, repo) do    
+        {:reply, Gittp.Repo.write(repo, commit), repo}
     end
+
+    # def handle_call({:write, %{"content" => content, 
+    #                            "checksum" => checksum, 
+    #                            "path" => file_path, 
+    #                            "commit_message" => commit_message} = params }, _from, repo) do     
+    #     {:reply, Gittp.Repo.write(repo, file_path, content, commit_message, checksum), repo}
+    # end
 
     def handle_call({:create, %{"content" => content, "path" => path, "commit_message" => commit_message}}, _from, repo) do
         {:reply, Gittp.Repo.create(repo, path, content, commit_message), repo}

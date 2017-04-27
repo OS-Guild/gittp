@@ -28,19 +28,23 @@ defmodule Gittp.Repo do
         repo
     end
 
-    def write(repo, file_path, content, commit_message, checksum) do
-        case checksum_valid?(repo, checksum, file_path) do
+    def write(repo, commit) do
+        case checksum_valid?(repo, commit.checksum, commit.path) do
             false -> {:error, :checksum_mismatch}
-            true -> write_and_push(repo, file_path, content, commit_message)   
+            true -> write_and_push(repo, commit)   
         end
     end
 
     def create(repo, path, content, commit_message) do
         absolute_path = full_path(repo, path)
-        {:ok, file} = File.open absolute_path, [:write]
-        IO.write file, content
-        File.close file
-        commit_and_push(repo, commit_message)
+        case File.exists? absolute_path do
+            false -> 
+                {:ok, file} = File.open absolute_path, [:write]
+                IO.write file, content
+                File.close file
+                commit_and_push(repo, commit_message)
+            true -> {:error, :file_exists}
+        end
     end
 
     defp dir_content(repo, path) do
@@ -64,16 +68,16 @@ defmodule Gittp.Repo do
         end
     end
 
-    defp write_and_push(repo, file_path, content, commit_message) do
-        case File.write full_path(repo, file_path), content do
-            :ok -> commit_and_push(repo, commit_message)
+    defp write_and_push(repo, commit) do
+        case File.write full_path(repo, commit.path), commit.content do
+            :ok -> commit_and_push(repo, commit)
             error -> {:reply, error, repo}    
         end
     end
 
-    defp commit_and_push(repo, commit_message) do
+    defp commit_and_push(repo, commit) do
         Git.add repo, "."
-        Git.commit repo, ["-m", commit_message]
+        Git.commit repo, ["-m", commit.commit_message, "--author", commit.author]
         case Git.pull repo do
             {:ok, _} -> case Git.push repo do 
                             {:ok, message} -> {:reply, message, repo}
