@@ -71,7 +71,7 @@ defmodule Gittp.Repo do
     defp write_and_push(repo, commit) do
         case File.write full_path(repo, commit.path), commit.content do
             :ok -> commit_and_push(repo, commit)
-            error -> {:reply, error, repo}    
+            error -> {:error, error}    
         end
     end
 
@@ -80,14 +80,14 @@ defmodule Gittp.Repo do
         Git.commit repo, ["-m", commit.commit_message, "--author", commit.author]
         case Git.pull repo do
             {:ok, _} -> case Git.push repo do 
-                            {:ok, message} -> {:reply, message, repo}
+                            {:ok, message} -> {:ok, message}
                             {:error, message} ->
                                  Git.reset repo, ~w(--hard HEAD~1)
-                                 {:reply, {:error, message}, repo}
+                                 {:ok, {:error, message}}
                         end
             {:error, message} ->
                  Git.reset repo, ~w(--hard HEAD~1)
-                {:reply, message, repo}
+                {:ok, message}
         end        
     end
 
