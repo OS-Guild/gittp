@@ -9,18 +9,21 @@ defmodule Gittp.ContentController do
     json conn, content
   end
 
-  def write(conn, %{"path" => path, 
-                    "content" => content, 
-                    "checksum" => checksum, 
-                    "commit_message" => commit_message} = params) do
-    commit = %Gittp.Commit{path: path, content: content, checksum: checksum, commit_message: commit_message}                  
-    commit = if Map.has_key?(params, "author") do
-      %Gittp.Commit{commit | author: Map.get(params, "author")}
-    end 
+  def write(conn, %{"path" => _, "content" => _, "checksum" => _, "commit_message" => _} = params) do
+    commit = Gittp.Commit.from params
 
     case Gittp.Git.write(:git, commit) do
         {:ok, _} -> send_resp(conn, 200, "ok")
         {:error, error} -> handle_error(conn, error)      
+    end
+  end
+
+  def create(conn, %{"path" => _, "content" => _, "commit_message" => _} = params) do
+    commit = Gittp.Commit.from params
+
+    case Gittp.Git.create(:git, commit) do
+      {:ok, _} -> send_resp(conn, 200, "ok")
+      {:error, error} -> handle_error(conn, error)
     end
   end
 
@@ -31,16 +34,4 @@ defmodule Gittp.ContentController do
       error -> send_resp(conn, 500, inspect error)
     end
   end 
-
-  def create(conn, %{"path" => path, "content" => content, "commit_message" => commit_message} = params) do
-    commit = %Gittp.Commit{path: path, content: content, commit_message: commit_message}                  
-    commit = if Map.has_key?(params, "author") do
-      %Gittp.Commit{commit | author: Map.get(params, "author")}
-    end 
-
-    case Gittp.Git.create(:git, commit) do
-      {:ok, _} -> send_resp(conn, 200, "ok")
-      {:error, error} -> handle_error(conn, error)
-    end
-  end
 end

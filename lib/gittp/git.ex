@@ -44,10 +44,5 @@ defmodule Gittp.Git do
 
         Process.send_after(self(), :pull, @interval) 
         {:noreply, repo}
-    end
-
-    defp checksum_valid?(checksum, repo, file_path) do
-        full_path = Gittp.Repo.full_path(repo, file_path)
-        File.exists?(full_path) and Gittp.Utils.hash_file(full_path) == checksum
-    end    
+    end 
 end
