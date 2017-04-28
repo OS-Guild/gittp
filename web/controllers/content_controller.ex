@@ -27,12 +27,20 @@ defmodule Gittp.ContentController do
   defp handle_error(conn, error) do 
     case error do
       :checksum_mismatch -> send_resp(conn, 400, "Checksum mismatch, please read the file again")
-      _ -> send_resp(conn, 500, "Error")
+      :file_exists -> send_resp(conn, 400, "File alredy exists")      
+      error -> send_resp(conn, 500, inspect error)
     end
   end 
 
-  def create(conn, %{"path" => _, "content" => _, "commit_message" => _} = params) do
-    json conn, inspect Gittp.Git.create(:git, params)
-  end
+  def create(conn, %{"path" => path, "content" => content, "commit_message" => commit_message} = params) do
+    commit = %Gittp.Commit{path: path, content: content, commit_message: commit_message}                  
+    commit = if Map.has_key?(params, "author") do
+      %Gittp.Commit{commit | author: Map.get(params, "author")}
+    end 
 
+    case Gittp.Git.create(:git, commit) do
+      {:ok, _} -> send_resp(conn, 200, "ok")
+      {:error, error} -> handle_error(conn, error)
+    end
+  end
 end
