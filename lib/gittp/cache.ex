@@ -13,7 +13,7 @@ defmodule Gittp.Cache do
       |> Enum.map(fn f -> if File.dir?(f) do 
                             files_in_dir(f, repo_path)
                           else 
-                            full_name = Path.join(dir, f) |> Path.relative_to(repo_path)
+                            full_name = dir |> Path.join(f) |> Path.relative_to(repo_path)
                             {full_name, full_name}
                           end
                   end)
