@@ -3,16 +3,19 @@ defmodule Gittp.ContentController do
   require Logger
 
   def read(conn, %{"path" => path}) do
+    correct_path = Path.join(path)
     repo_path = Application.get_env(:gittp, Gittp.Endpoint)[:local_repo_path]
     repo = Git.new repo_path
-    case Gittp.Repo.content(repo, path) do
+    case Gittp.Repo.content(repo, correct_path) do
       {:ok, content} -> json conn, content
       {:error, error} -> handle_error(conn, error)
     end
   end
 
-  def write(conn, %{"path" => _, "content" => _, "checksum" => _, "commit_message" => _} = params) do
-    commit = Gittp.Commit.from params
+  def write(conn, %{"path" => path, "content" => _, "checksum" => _, "commit_message" => _} = params) do
+    commit = params
+      |> Map.put("path", Path.join(path)) 
+      |> Gittp.Commit.from
 
     case Gittp.Git.write(:git, commit) do
         {:ok, _} -> send_resp(conn, 200, "ok")
@@ -20,8 +23,10 @@ defmodule Gittp.ContentController do
     end
   end
 
-  def create(conn, %{"path" => _, "content" => _, "commit_message" => _} = params) do
-    commit = Gittp.Commit.from params
+  def create(conn, %{"path" => path, "content" => _, "commit_message" => _} = params) do
+    commit = = params
+      |> Map.put("path", Path.join(path)) 
+      |> Gittp.Commit.from
 
     case Gittp.Git.create(:git, commit) do
       {:ok, _} -> send_resp(conn, 200, "ok")
