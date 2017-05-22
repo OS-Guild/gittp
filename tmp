@@ -1,0 +1,1 @@
+docker run -it --rm --network=dev_default --name gittp -v /Users/yshayy/code/tweek/services/git-service/ssh:/opt/certs -e SSH_PRIVATE_KEY=/opt/certs/tweekgit gittp ssh://git@tweek-git/tweek/repo
