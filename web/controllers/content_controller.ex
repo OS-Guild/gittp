@@ -24,7 +24,7 @@ defmodule Gittp.ContentController do
   end
 
   def create(conn, %{"path" => path, "content" => _, "commit_message" => _} = params) do
-    commit = = params
+    commit = params
       |> Map.put("path", Path.join(path)) 
       |> Gittp.Commit.from
 

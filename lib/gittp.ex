@@ -4,10 +4,10 @@ defmodule Gittp do
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
-  def start(_type, _args) do
+  def start(_type, args) do
     import Supervisor.Spec
-    Logger.info(inspect _args)
-    repo_address = List.first(_args) || System.get_env("REMOTE_REPO_PATH") 
+    Logger.info(inspect args)
+    repo_address = List.first(args) || System.get_env("REMOTE_REPO_PATH") 
     Logger.info("repo address is " <> repo_address);
     # Define workers and child supervisors to be supervised
     children = [

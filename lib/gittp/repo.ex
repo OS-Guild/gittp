@@ -8,7 +8,7 @@ defmodule Gittp.Repo do
     end
 
     def content(repo, path) do
-        case File.dir? path do
+        case File.dir? full_path(repo, path) do
             false -> file_content repo, path
                 _ -> dir_content repo, path
         end
@@ -92,7 +92,7 @@ defmodule Gittp.Repo do
     end
 
     defp checksum_valid?(repo, checksum, file_path) do
-        full_path = Gittp.Repo.full_path(repo, file_path)
+        full_path = full_path(repo, file_path)
         File.exists?(full_path) and Gittp.Utils.hash_file(full_path) == checksum
     end 
 end
