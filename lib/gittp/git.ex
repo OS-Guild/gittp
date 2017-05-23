@@ -1,7 +1,6 @@
 defmodule Gittp.Git do
     use GenServer
     require Logger
-    import Gittp.Commit
     @interval 120 * 1000
 
     # client functions
