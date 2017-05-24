@@ -4,7 +4,9 @@ defmodule Gittp.Router do
   
   pipeline :api do
     plug :accepts, ["json"]
+    plug Gittp.Web.Plugs.ValidateApiKeyPlug
     plug :validate_path
+    
   end
 
   scope "/api", Gittp do
