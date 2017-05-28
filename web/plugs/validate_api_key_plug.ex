@@ -2,13 +2,8 @@ defmodule Gittp.Web.Plugs.ValidateApiKeyPlug do
    import Plug.Conn
    require Logger
 
-   def init(_) do
-       System.get_env("API_KEYS_FILE_PATH")
-       |> File.stream!([:read, :utf8])
-       |> Enum.reduce([], fn (current, list) -> [current | list] end)
-   end
-
-   def call(conn, authorized_keys) do
+   def validate_api_key(conn, _) do
+       authorized_keys = Gittp.Web.Plugs.AuthorizedKeysCache.get
        api_key = get_req_header(conn, "gittp-api-key")  
        validate_key(conn, api_key, authorized_keys)
    end

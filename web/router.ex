@@ -1,12 +1,12 @@
 defmodule Gittp.Router do
   use Gittp.Web, :router
   import Gittp.Web.Plugs.ValidatePathPlug
+  import Gittp.Web.Plugs.ValidateApiKeyPlug
   
   pipeline :api do
     plug :accepts, ["json"]
-    plug Gittp.Web.Plugs.ValidateApiKeyPlug
+    plug :validate_api_key
     plug :validate_path
-    
   end
 
   scope "/api", Gittp do

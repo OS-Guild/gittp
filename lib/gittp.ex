@@ -6,11 +6,12 @@ defmodule Gittp do
   # for more information on OTP Applications
   def start(_type, args) do
     import Supervisor.Spec
-    Logger.info(inspect args)
     repo_address = List.first(args) || System.get_env("REMOTE_REPO_PATH") 
     Logger.info("repo address is " <> repo_address);
     # Define workers and child supervisors to be supervised
     children = [
+      worker(Gittp.Web.Plugs.AuthorizedKeysCache, []),
+      
       # Start the endpoint when the application starts
       supervisor(Gittp.Endpoint, []),
       # Start your own worker by calling: Gittp.Worker.start_link(arg1, arg2, arg3)
