@@ -3,7 +3,11 @@ defmodule Gittp.ContentController do
   require Logger
 
   def read(conn, %{"path" => path}) do
-    correct_path = Path.join(path)
+    correct_path = case path do
+      [] -> ""
+      _ -> Path.join(path)  
+    end
+    
     repo_path = Application.get_env(:gittp, Gittp.Endpoint)[:local_repo_path]
     repo = Git.new repo_path
     case Gittp.Repo.content(repo, correct_path) do
