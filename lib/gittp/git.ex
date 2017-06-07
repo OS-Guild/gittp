@@ -24,6 +24,9 @@ defmodule Gittp.Git do
                   false -> Gittp.Repo.clone(remote_repo_url, local_repo_path)
                       _ -> Gittp.Repo.from_local(local_repo_path)
                end
+        
+        Gittp.Cache.start_link(local_repo_path)
+
 
         Process.send_after(self(), :pull, @interval) 
         {:ok, repo}
@@ -40,6 +43,8 @@ defmodule Gittp.Git do
     def handle_info(:pull, repo) do
         Git.pull repo
         Logger.info "pulled latest changes from upstream"
+
+        Gittp.Cache.refresh repo.path
 
         Process.send_after(self(), :pull, @interval) 
         {:noreply, repo}

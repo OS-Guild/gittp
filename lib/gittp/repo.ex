@@ -8,9 +8,12 @@ defmodule Gittp.Repo do
     end
 
     def content(repo, path) do
-        case File.dir? full_path(repo, path) do
-            false -> file_content repo, path
-                _ -> dir_content repo, path
+        case Gittp.Cache.get_file_content(path) do
+            nil -> case File.dir? full_path(repo, path) do
+                false -> {:error, :enoent}
+                true -> dir_content repo, path
+            end
+            file -> {:ok, file}
         end
     end
 
