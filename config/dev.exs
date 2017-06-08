@@ -24,9 +24,6 @@ config :gittp, Gittp.Endpoint,
       ~r{web/templates/.*(eex)$}
     ],   
   ],
-  #repo_base_path: "/Users/guy/guy-personal/dev/repo-example"
-  local_repo_path: "/Users/itaymaoz/dev/gittp/gittp-example-repo/",
-  remote_repo_url: "https://github.com/itaym2/docs.git"  
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

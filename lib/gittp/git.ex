@@ -27,7 +27,6 @@ defmodule Gittp.Git do
         
         Gittp.Cache.start_link(local_repo_path)
 
-
         Process.send_after(self(), :pull, @interval) 
         {:ok, repo}
     end

@@ -8,7 +8,7 @@ defmodule Gittp.ContentController do
       _ -> Path.join(path)  
     end
     
-    repo_path = Application.get_env(:gittp, Gittp.Endpoint)[:local_repo_path]
+    repo_path = System.get_env("LOCAL_REPO_PATH")
     repo = Git.new repo_path
     case Gittp.Repo.content(repo, correct_path) do
       {:ok, content} -> json conn, content

@@ -17,7 +17,7 @@ defmodule Gittp do
       # Start your own worker by calling: Gittp.Worker.start_link(arg1, arg2, arg3)
       
       worker(Gittp.Git, 
-        local_repo_path: Application.get_env(:gittp, Gittp.Endpoint)[:local_repo_path], 
+        local_repo_path: System.get_env("LOCAL_REPO_PATH"), 
         remote_repo_url: repo_address)
     ]
 

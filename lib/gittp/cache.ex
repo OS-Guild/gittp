@@ -29,8 +29,7 @@ defmodule Gittp.Cache do
    defp file_content(path) do             
          content = File.read! path 
           %{"content" => content, 
-            "checksum" => Gittp.Utils.hash_string(content), 
-            "path" => path, 
+            "checksum" => Gittp.Utils.hash_string(content),
             "isDirectory" => false}
     end
 
