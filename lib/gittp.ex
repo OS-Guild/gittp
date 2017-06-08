@@ -7,7 +7,9 @@ defmodule Gittp do
   def start(_type, args) do
     import Supervisor.Spec
     repo_address = List.first(args) || System.get_env("REMOTE_REPO_PATH") 
-    Logger.info("repo address is " <> repo_address);
+    local_repo_path = System.get_env("LOCAL_REPO_PATH")
+    Logger.info("repo address is " <> repo_address)
+    Logger.info("local path is " <> local_repo_path)
     # Define workers and child supervisors to be supervised
     children = [
       worker(Gittp.Web.Plugs.AuthorizedKeysCache, []),
@@ -17,7 +19,7 @@ defmodule Gittp do
       # Start your own worker by calling: Gittp.Worker.start_link(arg1, arg2, arg3)
       
       worker(Gittp.Git, 
-        local_repo_path: System.get_env("LOCAL_REPO_PATH"), 
+        local_repo_path: local_repo_path, 
         remote_repo_url: repo_address)
     ]
 

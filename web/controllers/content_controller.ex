@@ -16,27 +16,40 @@ defmodule Gittp.ContentController do
     end
   end
 
+  
   def write(conn, %{"path" => path, "content" => _, "checksum" => _, "commit_message" => _} = params) do
-    commit = params
-      |> Map.put("path", Path.join(path)) 
-      |> Gittp.Commit.from
+    if (System.get_env("ALLOW_WRITES") == nil) do
+      send_resp(conn, 403, "Forbidden ")
+    else
+      commit = params
+        |> Map.put("path", Path.join(path)) 
+        |> Gittp.Commit.from
 
-    case Gittp.Git.write(:git, commit) do
-        {:ok, _} -> send_resp(conn, 200, "ok")
-        {:error, error} -> handle_error(conn, error)      
+      case Gittp.Git.write(:git, commit) do
+          {:ok, _} -> send_resp(conn, 200, "ok")
+          {:error, error} -> handle_error(conn, error)      
+      end
     end
   end
 
+  def write(conn, _), do: send_resp(conn, 400, "Missing required param")      
+      
   def create(conn, %{"path" => path, "content" => _, "commit_message" => _} = params) do
-    commit = params
-      |> Map.put("path", Path.join(path)) 
-      |> Gittp.Commit.from
+    if (System.get_env("ALLOW_WRITES") == nil) do
+      send_resp(conn, 403, "Forbidden ")
+    else
+      commit = params
+        |> Map.put("path", Path.join(path)) 
+        |> Gittp.Commit.from
 
-    case Gittp.Git.create(:git, commit) do
-      {:ok, _} -> send_resp(conn, 200, "ok")
-      {:error, error} -> handle_error(conn, error)
+      case Gittp.Git.create(:git, commit) do
+        {:ok, _} -> send_resp(conn, 200, "ok")
+        {:error, error} -> handle_error(conn, error)
+      end
     end
   end
+
+  def create(conn, _), do: send_resp(conn, 400, "Missing required param")      
 
   defp handle_error(conn, error) do 
     case error do

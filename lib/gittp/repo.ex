@@ -25,6 +25,7 @@ defmodule Gittp.Repo do
     end
 
     def clone(remote_repo_url, local_repo_path) do
+        Logger.info "cloning remote repo"
         {:ok, repo} = Git.clone [remote_repo_url, local_repo_path]
         Git.remote repo, ["add", "upstream", remote_repo_url]    
         Logger.info "cloned " <> remote_repo_url
