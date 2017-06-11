@@ -1,6 +1,9 @@
 defmodule Gittp.ContentController do
   use Gittp.Web, :controller
+  alias Gittp.Web.Plugs.IsWritesAllowedPlug
   require Logger
+
+  plug IsWritesAllowedPlug when action in [:write, :create]
 
   def read(conn, %{"path" => path}) do
     correct_path = case path do
@@ -16,11 +19,7 @@ defmodule Gittp.ContentController do
     end
   end
 
-  
   def write(conn, %{"path" => path, "content" => _, "checksum" => _, "commit_message" => _} = params) do
-    if (System.get_env("ALLOW_WRITES") == nil) do
-      send_resp(conn, 403, "Forbidden ")
-    else
       commit = params
         |> Map.put("path", Path.join(path)) 
         |> Gittp.Commit.from
@@ -29,15 +28,11 @@ defmodule Gittp.ContentController do
           {:ok, _} -> send_resp(conn, 200, "ok")
           {:error, error} -> handle_error(conn, error)      
       end
-    end
   end
 
   def write(conn, _), do: send_resp(conn, 400, "Missing required param")      
       
   def create(conn, %{"path" => path, "content" => _, "commit_message" => _} = params) do
-    if (System.get_env("ALLOW_WRITES") == nil) do
-      send_resp(conn, 403, "Forbidden ")
-    else
       commit = params
         |> Map.put("path", Path.join(path)) 
         |> Gittp.Commit.from
@@ -46,7 +41,6 @@ defmodule Gittp.ContentController do
         {:ok, _} -> send_resp(conn, 200, "ok")
         {:error, error} -> handle_error(conn, error)
       end
-    end
   end
 
   def create(conn, _), do: send_resp(conn, 400, "Missing required param")      
