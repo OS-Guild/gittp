@@ -43,10 +43,14 @@ defmodule Gittp.Repo do
         absolute_path = full_path(repo, commit.path)
         case File.exists? absolute_path do
             false -> 
-                {:ok, file} = File.open absolute_path, [:write]
-                IO.write file, commit.content
-                File.close file
-                commit_and_push(repo, commit)
+                case File.open(absolute_path, [:write]) do
+                    {:ok, file} -> 
+                        IO.write file, commit.content
+                        File.close file
+                        commit_and_push(repo, commit)
+                    error -> error
+                end
+                
             true -> {:error, :file_exists}
         end
     end

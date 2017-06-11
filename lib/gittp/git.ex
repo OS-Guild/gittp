@@ -18,13 +18,13 @@ defmodule Gittp.Git do
     end
 
     # server functions
-
     def init(local_repo_path: local_repo_path, remote_repo_url: remote_repo_url) do
         repo = case File.exists?(local_repo_path) do
                   false -> Gittp.Repo.clone(remote_repo_url, local_repo_path)
                       _ -> Gittp.Repo.from_local(local_repo_path)
                end
         
+
         Gittp.Cache.start_link(local_repo_path)
 
         Process.send_after(self(), :pull, @interval) 
@@ -32,20 +32,37 @@ defmodule Gittp.Git do
     end
 
     def handle_call({:write, commit = %Gittp.Commit{}}, _from, repo) do    
-        {:reply, Gittp.Repo.write(repo, commit), repo}
+        result = Gittp.Repo.write(repo, commit)
+        finish_write_operation(result, repo)
     end
 
     def handle_call({:create, commit = %Gittp.Commit{}}, _from, repo) do
-        {:reply, Gittp.Repo.create(repo, commit), repo}
+        result = Gittp.Repo.create(repo, commit)
+        finish_write_operation(result, repo)
     end 
+
+    defp finish_write_operation({:error, _} = result, repo), do: {:reply, result, repo}
+
+    defp finish_write_operation(result, repo) do
+        GenServer.cast(self(), {:refresh})
+        {:reply, result, repo}
+    end
+
+    def handle_cast({:refresh}, repo) do
+        refresh_repo(repo)        
+        {:noreply, repo}
+    end
     
     def handle_info(:pull, repo) do
+        refresh_repo(repo)
+        Process.send_after(self(), :pull, @interval) 
+        {:noreply, repo}
+    end 
+
+    defp refresh_repo(repo) do
         Git.pull repo
         Logger.info "pulled latest changes from upstream"
 
         Gittp.Cache.refresh repo.path
-
-        Process.send_after(self(), :pull, @interval) 
-        {:noreply, repo}
-    end 
+    end
 end
