@@ -1,9 +1,9 @@
 defmodule Gittp.ContentController do
   use Gittp.Web, :controller
-  alias Gittp.Web.Plugs.IsWritesAllowedPlug
+  import Gittp.Web.Plugs.IsWritesAllowedPlug
   require Logger
 
-  plug IsWritesAllowedPlug when action in [:write, :create]
+  plug :validate_writes_allowed when action in [:write, :create]
 
   def read(conn, %{"path" => path}) do
     correct_path = case path do
