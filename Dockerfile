@@ -9,6 +9,7 @@ ENV MIX_ENV=prod
 ENV REMOTE_GIT_PORT=22
 ENV PORT=4000
 RUN mix compile
+RUN git config --global user.email gittp@system
 
 EXPOSE 4000
 CMD ["ssh-agent", "sh", "./start.sh"]
