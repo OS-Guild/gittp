@@ -43,10 +43,11 @@ defmodule Gittp.Repo do
         absolute_path = full_path(repo, commit.path)
         case File.exists? absolute_path do
             false -> 
-                case absolute_path
+                absolute_path
                 |> Path.dirname
-                |> File.mkdir_p do
-                    {:ok, _} ->
+                |> File.mkdir_p
+                |> case do
+                    :ok ->
                         create_file_in_git(repo, commit, absolute_path)
                     error -> error
                 end
