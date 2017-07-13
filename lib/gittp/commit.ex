@@ -11,7 +11,7 @@ defmodule Gittp.Commit do
 
         commit = case Map.has_key?(params, "checksum") do
                     false -> commit
-                    true -> %Gittp.Commit{commit | author: Map.get(params, "checksum")}
+                    true -> %Gittp.Commit{commit | checksum: Map.get(params, "checksum")}
                  end
         
         commit
