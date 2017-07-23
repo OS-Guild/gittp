@@ -10,11 +10,11 @@ defmodule Gittp.Git do
     end
 
     def write(server, %Gittp.Commit{content: _, checksum: _, path: _, commit_message: _} = body) do
-        GenServer.call(server, {:write, body}, 20_000)
+        GenServer.call(server, {:write, body}, 60_000)
     end
     
     def create(server, %Gittp.Commit{content: _, path: _, commit_message: _} = body) do
-        GenServer.call(server, {:create, body}, 20_000)
+        GenServer.call(server, {:create, body}, 60_000)
     end
 
     # server functions
