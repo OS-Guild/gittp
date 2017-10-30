@@ -12,4 +12,4 @@ RUN mix compile
 RUN git config --global user.email gittp@system
 
 EXPOSE 4000
-CMD ["ssh-agent", "sh", "./start.sh"]
+CMD ["sh", "./start.sh"]
