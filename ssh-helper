@@ -1,2 +1,2 @@
 #!/bin/sh
-ssh -o StrictHostKeyChecking=no -i $GIT_PRIVATE_KEY "$@"
+ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY "$@"
